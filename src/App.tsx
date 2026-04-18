@@ -21,20 +21,20 @@ const styles = `
   }
  
   :root {
-    --primary: #4f46e5;
-    --primary-light: #6366f1;
-    --primary-dark: #3730a3;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --bg-primary: #f8fafc;
+    --primary: #5d4037;
+    --primary-light: #8d6e63;
+    --primary-dark: #3e2723;
+    --success: #6d8b74;
+    --danger: #9c6644;
+    --warning: #b08968;
+    --bg-primary: #fdfcfb;
     --bg-secondary: #ffffff;
-    --bg-glass: rgba(255, 255, 255, 0.8);
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --border: rgba(226, 232, 240, 0.8);
-    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --bg-glass: rgba(253, 252, 251, 0.82);
+    --text-primary: #2d241e;
+    --text-secondary: #6d5d51;
+    --border: rgba(93, 64, 55, 0.12);
+    --shadow: 0 10px 15px -3px rgba(93, 64, 55, 0.1), 0 4px 6px -4px rgba(93, 64, 55, 0.1);
+    --shadow-sm: 0 1px 3px 0 rgba(93, 64, 55, 0.05), 0 1px 2px -1px rgba(93, 64, 55, 0.05);
   }
  
   html, body {
@@ -139,10 +139,6 @@ const styles = `
     font-weight: 600;
   }
  
-  .badge-primary {
-    background: rgba(79, 70, 229, 0.1);
-    color: var(--primary);
-  }
  
   .badge-success {
     background: rgba(16, 185, 129, 0.2);
@@ -316,7 +312,7 @@ const styles = `
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+    background: radial-gradient(circle at center, rgba(93, 64, 55, 0.12) 0%, transparent 50%);
     animation: rotate 20s linear infinite;
     z-index: -1;
   }
@@ -331,7 +327,7 @@ const styles = `
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 24px;
-    background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, #2d241e 0%, #5d4037 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -393,7 +389,7 @@ const styles = `
   .feature-icon {
     width: 48px;
     height: 48px;
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(93, 64, 55, 0.08);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -421,8 +417,8 @@ const styles = `
   .cta-card {
     padding: 48px;
     text-align: center;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: linear-gradient(135deg, rgba(93, 64, 55, 0.08) 0%, rgba(109, 139, 116, 0.05) 100%);
+    border: 1px solid rgba(93, 64, 55, 0.15);
     margin-top: 80px;
   }
 `;
@@ -675,26 +671,147 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 };
 
 /**
+ * Auth Page Component (Login / Sign Up)
+ */
+const AuthPage: React.FC<{ 
+  initialMode: 'login' | 'signup';
+  onBack: () => void;
+  onSuccess: (user: User) => void;
+}> = ({ initialMode, onBack, onSuccess }) => {
+  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const mockUser: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: mode === 'signup' ? name : email.split('@')[0],
+        email: email,
+        role: 'student',
+        level: 'beginner',
+        goals: []
+      };
+      setIsLoading(false);
+      onSuccess(mockUser);
+    }, 1500);
+  };
+
+  return (
+    <div className="view-transition" style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      background: 'radial-gradient(circle at 10% 20%, rgba(93, 64, 55, 0.05) 0%, transparent 40%)'
+    }}>
+      <div className="glass" style={{ width: '400px', padding: '40px' }}>
+        <button className="btn-secondary" onClick={onBack} style={{ border: 'none', background: 'none', padding: 0, marginBottom: '24px', cursor: 'pointer', fontSize: '14px' }}>
+          ← Back to Site
+        </button>
+        
+        <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>
+          {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', fontSize: '15px' }}>
+          {mode === 'login' ? 'Sign in to continue your journey.' : 'Join the elite engineering circle today.'}
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {mode === 'signup' && (
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Full Name</label>
+              <input 
+                type="text" 
+                placeholder="John Doe" 
+                style={{ width: '100%' }} 
+                required 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Email Address</label>
+            <input 
+              type="email" 
+              placeholder="john@example.com" 
+              style={{ width: '100%' }} 
+              required 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600' }}>Password</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              style={{ width: '100%' }} 
+              required 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          <button className="btn btn-primary" type="submit" disabled={isLoading} style={{ marginTop: '12px', width: '100%', height: '50px' }}>
+            {isLoading ? '⏳ Authenticating...' : mode === 'login' ? 'Sign In' : 'Join Now'}
+          </button>
+        </form>
+
+        <div style={{ marginTop: '32px', textAlign: 'center', fontSize: '14px' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>
+            {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+          </span>
+          <button 
+            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              color: 'var(--primary)', 
+              fontWeight: '600', 
+              cursor: 'pointer' 
+            }}
+          >
+            {mode === 'login' ? 'Join for free' : 'Sign in'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
  * Landing Page Component
  */
-const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
+const LandingPage: React.FC<{ 
+  onGetStarted: () => void;
+  onLogin: () => void;
+}> = ({ onGetStarted, onLogin }) => {
   return (
     <div className="view-transition">
       {/* Navigation */}
       <nav className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)' }}>MentorMatch</h2>
+        <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)', cursor: 'pointer' }} onClick={() => window.location.reload()}>MentorMatch</h2>
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
           <a href="#how-it-works" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '500' }}>Process</a>
           <a href="#features" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '500' }}>Features</a>
-          <button className="btn btn-primary" onClick={onGetStarted}>Try Marketplace</button>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button className="btn btn-secondary" onClick={onLogin}>Log In</button>
+            <button className="btn btn-primary" onClick={onGetStarted}>Join Free</button>
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="hero-section" style={{ padding: '40px 0 100px' }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '60px', flexWrap: 'wrap-reverse' }}>
           <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div className="badge badge-primary" style={{ marginBottom: '24px' }}>✨ Now in Public Beta</div>
             <h1 className="hero-title">
               Master Engineering <br /> With 1-on-1 Mentoring
             </h1>
@@ -729,7 +846,7 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
           <div className="stats-grid" style={{ margin: '0 auto' }}>
             <div className="glass stat-card">
               <div className="stat-value">500+</div>
-              <div className="stat-label">Experts Mentors</div>
+              <div className="stat-label">Expert Mentors</div>
             </div>
             <div className="glass stat-card">
               <div className="stat-value">12k+</div>
@@ -891,7 +1008,9 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
  * Main App Component
  */
 const MentorMatch: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'marketplace'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'marketplace' | 'auth'>('landing');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [user, setUser] = useState<User | null>(null);
   const { toasts, addToast, removeToast } = useToast();
   const bookingModal = useModal<Mentor>();
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
@@ -921,10 +1040,12 @@ const MentorMatch: React.FC = () => {
     };
   }, [addToast]);
  
-  // Load current student
+  // Load current student (Mocked for initial load, will be replaced by Auth)
   useEffect(() => {
-    repository.getUserById('user-1').then(setStudent);
-  }, []);
+    if (user) {
+      setStudent(user);
+    }
+  }, [user]);
  
   // Calculate matches when student or mentors change
   useEffect(() => {
@@ -937,7 +1058,14 @@ const MentorMatch: React.FC = () => {
   }, [student, filteredMentors]);
  
   const handleBooking = async (formData: any) => {
-    if (!student || !bookingModal.data) return;
+    if (!user) {
+      addToast('Please sign in to book a session', 'info');
+      setAuthMode('login');
+      setCurrentView('auth');
+      return;
+    }
+
+    if (!bookingModal.data) return;
  
     setBookingSubmitting(true);
  
@@ -976,8 +1104,21 @@ const MentorMatch: React.FC = () => {
     <>
       <style>{styles}</style>
  
-      {currentView === 'landing' ? (
-        <LandingPage onGetStarted={() => setCurrentView('marketplace')} />
+      {currentView === 'auth' ? (
+        <AuthPage 
+          initialMode={authMode}
+          onBack={() => setCurrentView('landing')}
+          onSuccess={(u) => {
+            setUser(u);
+            setCurrentView('marketplace');
+            addToast(`Welcome back, ${u.name}!`, 'success');
+          }}
+        />
+      ) : currentView === 'landing' ? (
+        <LandingPage 
+          onGetStarted={() => setCurrentView('marketplace')} 
+          onLogin={() => { setAuthMode('login'); setCurrentView('auth'); }}
+        />
       ) : (
         <div className="container view-transition">
           {/* Header */}
@@ -990,9 +1131,23 @@ const MentorMatch: React.FC = () => {
                 Find your perfect mentor match • Premium mentorship made simple
               </p>
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={() => setCurrentView('landing')}>
-              ← Back
-            </button>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              {user ? (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '600' }}>{user.name}</div>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', margin: '4px 0 0 auto' }}>
+                    {user.name[0]}
+                  </div>
+                </div>
+              ) : (
+                <button className="btn btn-secondary btn-sm" onClick={() => { setAuthMode('login'); setCurrentView('auth'); }}>
+                  Sign In
+                </button>
+              )}
+              <button className="btn btn-secondary btn-sm" onClick={() => setCurrentView('landing')}>
+                ← Back
+              </button>
+            </div>
           </div>
 
           {student && (

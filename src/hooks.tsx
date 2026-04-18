@@ -3,41 +3,38 @@
  * Reusable logic for components
  */
  
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { MatchResult, Mentor, Booking } from './types';
  
 /**
  * Hook for managing search state and filtering
  */
-export function useSearch(results: MatchResult[]) {
+export function useSearch(mentors: Mentor[]) {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [minRating, setMinRating] = useState<number>(0);
-  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
  
-  const filteredMentors = useCallback(() => {
-    return results.filter((result) => {
-      const mentor = result.mentor;
+  const filteredMentorsList = useMemo(() => {
+    return mentors.filter((mentor) => {
       const matchesSearch =
         mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mentor.expertise.some((e) =>
+        (mentor.expertise && mentor.expertise.some((e) =>
           e.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        ));
  
       const matchesSkills =
         selectedSkills.length === 0 ||
         selectedSkills.some((skill) =>
-          mentor.expertise.some((e) =>
+          mentor.expertise && mentor.expertise.some((e) =>
             e.toLowerCase().includes(skill.toLowerCase())
           )
         );
  
       const matchesRating = mentor.rating >= minRating;
-      const matchesVerified = verifiedOnly ? mentor.isVerified : true;
  
-      return matchesSearch && matchesSkills && matchesRating && matchesVerified;
+      return matchesSearch && matchesSkills && matchesRating;
     });
-  }, [results, searchTerm, selectedSkills, minRating, verifiedOnly]);
+  }, [mentors, searchTerm, selectedSkills, minRating]);
  
   const toggleSkill = useCallback((skill: string) => {
     setSelectedSkills((prev) =>
@@ -52,9 +49,7 @@ export function useSearch(results: MatchResult[]) {
     toggleSkill,
     minRating,
     setMinRating,
-    verifiedOnly,
-    setVerifiedOnly,
-    filteredMentors: filteredMentors(),
+    filteredMentors: filteredMentorsList,
   };
 }
  
