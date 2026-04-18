@@ -1,0 +1,12 @@
+{
+  "name": "mentormatch-frontend",
+  "version": "1.0.0",
+  "description": "Professional Mentorship Marketplace Platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx -y servor ./ index.html 8080 --reload"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
