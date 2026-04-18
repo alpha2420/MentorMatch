@@ -1050,10 +1050,159 @@ const LandingPage: React.FC<{
 };
 
 /**
+ * Dashboard Page Component
+ */
+const DashboardPage: React.FC<{ user: User; onBack: () => void }> = ({ user, onBack }) => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'requests' | 'earnings'>(
+    user.role === 'mentor' ? 'requests' : 'upcoming'
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchBookings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await repository.getBookingsByUserId(user.id, user.role);
+      setBookings(data);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user.id, user.role]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  const handleUpdateStatus = async (bookingId: string, status: BookingStatus) => {
+    try {
+      await repository.updateBookingStatus(bookingId, status);
+      fetchBookings(); // Refresh list
+    } catch (error) {
+      alert('Failed to update booking status');
+    }
+  };
+
+  return (
+    <div className="view-transition" style={{ minHeight: '100vh', paddingBottom: '80px' }}>
+      <div className="container">
+        {/* Dash Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', margin: '40px 0' }}>
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '2px', color: 'var(--primary-light)' }}>
+              {user.role} workspace
+            </span>
+            <h1 style={{ fontSize: '36px', fontWeight: '800', marginTop: '4px' }}>Welcome, {user.name}</h1>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {user.role === 'mentor' && (
+              <div className="glass" style={{ padding: '12px 24px', textAlign: 'right' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Total Earnings</div>
+                <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--primary)' }}>$4,250.00</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Dash Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '40px' }}>
+          {/* Sidebar */}
+          <aside>
+            <div className="glass" style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <button 
+                className={`btn ${activeTab === 'upcoming' ? 'btn-primary' : 'btn-secondary'}`} 
+                style={{ justifyContent: 'flex-start', width: '100%', borderWidth: 0 }}
+                onClick={() => setActiveTab('upcoming')}
+              >
+                📅 {user.role === 'student' ? 'My Roadmap' : 'Calendar'}
+              </button>
+              {user.role === 'mentor' && (
+                <button 
+                  className={`btn ${activeTab === 'requests' ? 'btn-primary' : 'btn-secondary'}`} 
+                  style={{ justifyContent: 'flex-start', width: '100%', borderWidth: 0 }}
+                  onClick={() => setActiveTab('requests')}
+                >
+                  📥 Requests {bookings.filter(b => b.status === 'pending').length > 0 && `(${bookings.filter(b => b.status === 'pending').length})`}
+                </button>
+              )}
+              <button 
+                className={`btn ${activeTab === 'earnings' ? 'btn-primary' : 'btn-secondary'}`} 
+                style={{ justifyContent: 'flex-start', width: '100%', borderWidth: 0 }}
+                onClick={() => setActiveTab('earnings')}
+              >
+                ⚡ Settings
+              </button>
+            </div>
+          </aside>
+
+          {/* Content Area */}
+          <main>
+            {isLoading ? (
+              <div style={{ textAlign: 'center', padding: '100px' }}>Loading your Artisan journey...</div>
+            ) : (
+              <div className="view-transition">
+                <h3 style={{ marginBottom: '24px', fontSize: '20px' }}>
+                  {activeTab === 'upcoming' ? 'Upcoming Sessions' : activeTab === 'requests' ? 'Incoming Requests' : 'Account Settings'}
+                </h3>
+                
+                {bookings.length === 0 ? (
+                  <div className="glass" style={{ padding: '60px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🍃</div>
+                    <p style={{ color: 'var(--text-secondary)' }}>No data yet. Time to start your first mentorship loop!</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {bookings
+                      .filter(b => {
+                        if (activeTab === 'requests') return b.status === 'pending';
+                        if (activeTab === 'upcoming') return b.status === 'confirmed';
+                        return true;
+                      })
+                      .map((booking) => (
+                      <div key={booking.id} className="glass" style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary-light)', marginBottom: '4px', textTransform: 'uppercase' }}>
+                            {new Date(booking.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
+                          </div>
+                          <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>{booking.topic}</div>
+                          <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                            {user.role === 'mentor' ? 'Student ID: ' : 'Mentor ID: '} {user.role === 'mentor' ? booking.studentId : booking.mentorId}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                          <span className={`badge ${booking.status === 'confirmed' ? 'badge-primary' : ''}`} style={{ alignSelf: 'center' }}>
+                            {booking.status}
+                          </span>
+                          {user.role === 'mentor' && booking.status === 'pending' && (
+                            <>
+                              <button className="btn btn-success" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => handleUpdateStatus(booking.id!, 'confirmed')}>
+                                Confirm
+                              </button>
+                              <button className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={() => handleUpdateStatus(booking.id!, 'cancelled')}>
+                                Decline
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
  * Main App Component
  */
 const MentorMatch: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'marketplace' | 'auth'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'marketplace' | 'auth' | 'dashboard'>('landing');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [user, setUser] = useState<User | null>(null);
   const { toasts, addToast, removeToast } = useToast();
@@ -1170,22 +1319,33 @@ const MentorMatch: React.FC = () => {
       setBookingSubmitting(false);
     }
   };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setStudent(null);
+    setCurrentView('landing');
+    addToast('Logged out successfully', 'info');
+  };
  
   return (
     <>
       <style>{styles}</style>
  
-      {currentView === 'auth' ? (
+      {currentView === 'auth' && (
         <AuthPage 
-          initialMode={authMode}
-          onBack={() => setCurrentView('landing')}
-          onSuccess={(u) => {
-            setUser(u);
-            setCurrentView('marketplace');
-            addToast(`Welcome back, ${u.name}!`, 'success');
-          }}
+          initialMode={authMode} 
+          onBack={() => setCurrentView('landing')} 
+          onSuccess={(u) => { setUser(u); setCurrentView('marketplace'); addToast(`Welcome back, ${u.name}!`, 'success'); }} 
         />
-      ) : currentView === 'landing' ? (
+      )}
+      {currentView === 'dashboard' && user && (
+        <DashboardPage 
+          user={user} 
+          onBack={() => setCurrentView('marketplace')} 
+        />
+      )}
+      {currentView === 'landing' && (
         <LandingPage 
           onGetStarted={() => setCurrentView('marketplace')} 
           onLogin={() => { setAuthMode('login'); setCurrentView('auth'); }}
@@ -1203,20 +1363,25 @@ const MentorMatch: React.FC = () => {
               </p>
             </div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <button className="btn btn-primary btn-sm" onClick={() => setCurrentView('marketplace')}>
+                Explore
+              </button>
               {user ? (
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', fontWeight: '600' }}>{user.name}</div>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', margin: '4px 0 0 auto' }}>
-                    {user.name[0]}
-                  </div>
-                </div>
+                <>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setCurrentView('dashboard')}>
+                    Dashboard
+                  </button>
+                  <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </>
               ) : (
                 <button className="btn btn-secondary btn-sm" onClick={() => { setAuthMode('login'); setCurrentView('auth'); }}>
                   Sign In
                 </button>
               )}
               <button className="btn btn-secondary btn-sm" onClick={() => setCurrentView('landing')}>
-                ← Back
+                Home
               </button>
             </div>
           </div>

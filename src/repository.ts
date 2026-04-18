@@ -15,7 +15,9 @@ export interface IRepository {
   getAllUsers(): Promise<User[]>;
   getUserById(id: string): Promise<User | null>;
   getAllBookings(): Promise<Booking[]>;
+  getBookingsByUserId(userId: string, role: 'student' | 'mentor'): Promise<Booking[]>;
   saveBooking(booking: Booking): Promise<Booking>;
+  updateBookingStatus(bookingId: string, status: BookingStatus): Promise<void>;
 }
  
 /**
@@ -181,6 +183,11 @@ export class MockDataRepository implements IRepository {
     return this.bookings;
   }
  
+  async getBookingsByUserId(userId: string, role: 'student' | 'mentor'): Promise<Booking[]> {
+    await this.delay();
+    return this.bookings.filter((b) => (role === 'student' ? b.studentId === userId : b.mentorId === userId));
+  }
+ 
   async saveBooking(booking: Booking): Promise<Booking> {
     await this.delay(150);
     // Simulate ID generation
@@ -190,8 +197,16 @@ export class MockDataRepository implements IRepository {
     this.bookings.push(booking);
     return booking;
   }
+ 
+  async updateBookingStatus(bookingId: string, status: BookingStatus): Promise<void> {
+    await this.delay(100);
+    const booking = this.bookings.find((b) => b.id === bookingId);
+    if (booking) {
+      booking.status = status;
+    }
+  }
 }
-
+ 
 /**
  * Supabase Production Repository
  * Connects to live database
@@ -248,6 +263,18 @@ export class SupabaseRepository implements IRepository {
     return data as Booking[];
   }
 
+  async getBookingsByUserId(userId: string, role: 'student' | 'mentor'): Promise<Booking[]> {
+    const column = role === 'student' ? 'student_id' : 'mentor_id';
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq(column, userId)
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    return data as Booking[];
+  }
+
   async saveBooking(booking: Booking): Promise<Booking> {
     const { data, error } = await supabase
       .from('bookings')
@@ -257,6 +284,15 @@ export class SupabaseRepository implements IRepository {
     
     if (error) throw error;
     return data as Booking;
+  }
+
+  async updateBookingStatus(bookingId: string, status: BookingStatus): Promise<void> {
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId);
+    
+    if (error) throw error;
   }
 }
 
