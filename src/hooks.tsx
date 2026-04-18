@@ -1,82 +1,50 @@
 /**
- * hooks.tsx
- * Custom React hooks for state management across MentorMatch.
+ * React Hooks & Component Utilities
+ * Reusable logic for components
  */
-
-import {
-  useState,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
-import type { MatchResult, Toast, ToastType, BookingFormState } from './types';
-
-// ─────────────────────────────────────────────
-// useDebounce
-// ─────────────────────────────────────────────
-
-export function useDebounce<T>(value: T, delay = 300): T {
-  const [debounced, setDebounced] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
-
-// ─────────────────────────────────────────────
-// useSearch
-// Filter MatchResult[] by text, skills, rating
-// ─────────────────────────────────────────────
-
-export interface UseSearchReturn {
-  searchTerm: string;
-  setSearchTerm: (val: string) => void;
-  selectedSkills: string[];
-  toggleSkill: (skill: string) => void;
-  minRating: number;
-  setMinRating: (val: number) => void;
-  verifiedOnly: boolean;
-  setVerifiedOnly: (val: boolean) => void;
-  filteredMentors: MatchResult[];
-}
-
-export function useSearch(mentors: MatchResult[]): UseSearchReturn {
-  const [searchTerm, setSearchTerm] = useState('');
+ 
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { MatchResult, Mentor, Booking } from './types';
+ 
+/**
+ * Hook for managing search state and filtering
+ */
+export function useSearch(results: MatchResult[]) {
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [minRating, setMinRating] = useState(0);
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
-
-  const debouncedTerm = useDebounce(searchTerm, 250);
-
+  const [minRating, setMinRating] = useState<number>(0);
+  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
+ 
+  const filteredMentors = useCallback(() => {
+    return results.filter((result) => {
+      const mentor = result.mentor;
+      const matchesSearch =
+        mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentor.expertise.some((e) =>
+          e.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+ 
+      const matchesSkills =
+        selectedSkills.length === 0 ||
+        selectedSkills.some((skill) =>
+          mentor.expertise.some((e) =>
+            e.toLowerCase().includes(skill.toLowerCase())
+          )
+        );
+ 
+      const matchesRating = mentor.rating >= minRating;
+      const matchesVerified = verifiedOnly ? mentor.isVerified : true;
+ 
+      return matchesSearch && matchesSkills && matchesRating && matchesVerified;
+    });
+  }, [results, searchTerm, selectedSkills, minRating, verifiedOnly]);
+ 
   const toggleSkill = useCallback((skill: string) => {
-    setSelectedSkills(prev =>
-      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    setSelectedSkills((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     );
   }, []);
-
-  const filteredMentors = mentors.filter(({ mentor }) => {
-    const term = debouncedTerm.toLowerCase();
-    const matchesTerm =
-      !term ||
-      mentor.name.toLowerCase().includes(term) ||
-      mentor.title.toLowerCase().includes(term) ||
-      mentor.expertise.some(e => e.toLowerCase().includes(term));
-
-    const matchesSkills =
-      selectedSkills.length === 0 ||
-      selectedSkills.every(skill =>
-        mentor.expertise.some(e => e.toLowerCase().includes(skill.toLowerCase()))
-      );
-
-    const matchesRating = mentor.rating >= minRating;
-    const matchesVerified = !verifiedOnly || mentor.isVerified;
-
-    return matchesTerm && matchesSkills && matchesRating && matchesVerified;
-  });
-
+ 
   return {
     searchTerm,
     setSearchTerm,
@@ -86,169 +54,178 @@ export function useSearch(mentors: MatchResult[]): UseSearchReturn {
     setMinRating,
     verifiedOnly,
     setVerifiedOnly,
-    filteredMentors,
+    filteredMentors: filteredMentors(),
   };
 }
-
-// ─────────────────────────────────────────────
-// useToast
-// Queue and auto-dismiss toast notifications
-// ─────────────────────────────────────────────
-
-export interface UseToastReturn {
-  toasts: Toast[];
-  addToast: (message: string, type?: ToastType, duration?: number) => void;
-  removeToast: (id: string) => void;
+ 
+/**
+ * Hook for managing toast notifications
+ */
+export interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+  duration?: number;
 }
-
-export function useToast(): UseToastReturn {
+ 
+export function useToast() {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-    const timer = timersRef.current.get(id);
-    if (timer) {
-      clearTimeout(timer);
-      timersRef.current.delete(id);
-    }
-  }, []);
-
+  const idRef = useRef(0);
+ 
   const addToast = useCallback(
-    (message: string, type: ToastType = 'info', duration = 4000) => {
-      const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    (message: string, type: 'success' | 'error' | 'info' = 'info', duration = 3000) => {
+      const id = `toast-${idRef.current++}`;
       const toast: Toast = { id, message, type, duration };
-
-      setToasts(prev => [...prev, toast]);
-
-      const timer = setTimeout(() => removeToast(id), duration);
-      timersRef.current.set(id, timer);
-    },
-    [removeToast]
-  );
-
-  // Cleanup all timers on unmount
-  useEffect(() => {
-    const timers = timersRef.current;
-    return () => timers.forEach(t => clearTimeout(t));
-  }, []);
-
-  return { toasts, addToast, removeToast };
-}
-
-// ─────────────────────────────────────────────
-// useModal
-// Generic modal open/close state with typed data
-// ─────────────────────────────────────────────
-
-export interface UseModalReturn<T> {
-  isOpen: boolean;
-  data: T | null;
-  open: (data: T) => void;
-  close: () => void;
-}
-
-export function useModal<T>(): UseModalReturn<T> {
-  const [isOpen, setIsOpen] = useState(false);
-  const [data, setData] = useState<T | null>(null);
-
-  const open = useCallback((payload: T) => {
-    setData(payload);
-    setIsOpen(true);
-  }, []);
-
-  const close = useCallback(() => {
-    setIsOpen(false);
-    // Delay clearing data so exit animation can play
-    setTimeout(() => setData(null), 300);
-  }, []);
-
-  return { isOpen, data, open, close };
-}
-
-// ─────────────────────────────────────────────
-// useAsync
-// Handle async operations with status tracking
-// ─────────────────────────────────────────────
-
-export type AsyncStatus = 'idle' | 'pending' | 'success' | 'error';
-
-export interface UseAsyncReturn<T> {
-  status: AsyncStatus;
-  data: T | null;
-  error: Error | null;
-  execute: (...args: unknown[]) => Promise<void>;
-  isLoading: boolean;
-}
-
-export function useAsync<T>(
-  asyncFn: (...args: unknown[]) => Promise<T>,
-  immediate = false
-): UseAsyncReturn<T> {
-  const [status, setStatus] = useState<AsyncStatus>('idle');
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-
-  const execute = useCallback(
-    async (...args: unknown[]) => {
-      setStatus('pending');
-      setError(null);
-      try {
-        const result = await asyncFn(...args);
-        setData(result);
-        setStatus('success');
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error(String(err)));
-        setStatus('error');
+ 
+      setToasts((prev) => [...prev, toast]);
+ 
+      if (duration > 0) {
+        setTimeout(() => {
+          setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, duration);
       }
-    },
-    [asyncFn]
-  );
-
-  useEffect(() => {
-    if (immediate) execute();
-  }, [immediate, execute]);
-
-  return { status, data, error, execute, isLoading: status === 'pending' };
-}
-
-// ─────────────────────────────────────────────
-// useBookingForm
-// Manage booking form state, validation, and reset
-// ─────────────────────────────────────────────
-
-const DEFAULT_FORM: BookingFormState = {
-  topic: '',
-  date: '',
-  duration: 60,
-  notes: '',
-};
-
-export interface UseBookingFormReturn {
-  formData: BookingFormState;
-  updateField: <K extends keyof BookingFormState>(key: K, value: BookingFormState[K]) => void;
-  reset: () => void;
-  isValid: boolean;
-}
-
-export function useBookingForm(): UseBookingFormReturn {
-  const [formData, setFormData] = useState<BookingFormState>({ ...DEFAULT_FORM });
-
-  const updateField = useCallback(
-    <K extends keyof BookingFormState>(key: K, value: BookingFormState[K]) => {
-      setFormData(prev => ({ ...prev, [key]: value }));
+ 
+      return id;
     },
     []
   );
-
-  const reset = useCallback(() => {
-    setFormData({ ...DEFAULT_FORM });
+ 
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
-
-  const isValid =
-    formData.topic.trim().length >= 3 &&
-    formData.date.length > 0 &&
-    new Date(formData.date) > new Date();
-
-  return { formData, updateField, reset, isValid };
+ 
+  return { toasts, addToast, removeToast };
+}
+ 
+/**
+ * Hook for managing modal state
+ */
+export function useModal<T = unknown>() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [data, setData] = useState<T | null>(null);
+ 
+  const open = useCallback((modalData?: T) => {
+    if (modalData) {
+      setData(modalData);
+    }
+    setIsOpen(true);
+  }, []);
+ 
+  const close = useCallback(() => {
+    setIsOpen(false);
+    setData(null);
+  }, []);
+ 
+  return { isOpen, data, open, close };
+}
+ 
+/**
+ * Hook for managing async loading state
+ */
+export function useAsync<T>(
+  asyncFunction: () => Promise<T>,
+  immediate = true
+) {
+  const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>(
+    'idle'
+  );
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+ 
+  const execute = useCallback(async () => {
+    setStatus('pending');
+    setData(null);
+    setError(null);
+ 
+    try {
+      const response = await asyncFunction();
+      setData(response);
+      setStatus('success');
+      return response;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      setStatus('error');
+      throw error;
+    }
+  }, [asyncFunction]);
+ 
+  useEffect(() => {
+    if (immediate) {
+      execute();
+    }
+  }, [execute, immediate]);
+ 
+  return { status, data, error, execute };
+}
+ 
+/**
+ * Hook for managing booking form state
+ */
+export interface BookingFormState {
+  date: string;
+  topic: string;
+  notes: string;
+  duration: number;
+}
+ 
+export function useBookingForm() {
+  const [formData, setFormData] = useState<BookingFormState>({
+    date: '',
+    topic: '',
+    notes: '',
+    duration: 60,
+  });
+ 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+ 
+  // Custom interface extension to accept value: any for generic updater
+  const updateField = useCallback(
+    (field: keyof BookingFormState, value: any) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    },
+    []
+  );
+ 
+  const reset = useCallback(() => {
+    setFormData({
+      date: '',
+      topic: '',
+      notes: '',
+      duration: 60,
+    });
+  }, []);
+ 
+  const isValid = useCallback(() => {
+    return formData.date && formData.topic && formData.topic.length > 0;
+  }, [formData]);
+ 
+  return {
+    formData,
+    updateField,
+    reset,
+    isValid: isValid(),
+    isSubmitting,
+    setIsSubmitting,
+  };
+}
+ 
+/**
+ * Hook for debouncing values
+ */
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+ 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+ 
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+ 
+  return debouncedValue;
 }
