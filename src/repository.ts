@@ -264,5 +264,6 @@ export class SupabaseRepository implements IRepository {
  * Singleton instance
  * In production, we swap MockData for Supabase
  */
-const isSupabaseConfigured = !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
+const configuredUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const isSupabaseConfigured = configuredUrl.startsWith('http') && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const repository: IRepository = isSupabaseConfigured ? new SupabaseRepository() : new MockDataRepository();
