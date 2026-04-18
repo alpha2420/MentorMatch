@@ -3,7 +3,7 @@
  * Premium mentorship marketplace with glassmorphic design
  */
  
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Mentor, MatchResult, Booking, User } from './types';
 import { repository } from './repository';
 import { matchingStrategy } from './matchingStrategy';
@@ -293,6 +293,135 @@ const styles = `
   .font-semibold {
     font-weight: 600;
   }
+
+  /* Landing Page specific styles */
+  .hero-section {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+    animation: rotate 20s linear infinite;
+    z-index: -1;
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 24px;
+    background: linear-gradient(to bottom right, #fff 30%, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 60px;
+  }
+
+  .stat-card {
+    padding: 24px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-light);
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .features-section {
+    padding: 100px 24px;
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  .section-title {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .feature-card {
+    padding: 32px;
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--primary-light);
+  }
+
+  .view-transition {
+    animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .cta-card {
+    padding: 48px;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    margin-top: 80px;
+  }
 `;
  
 /**
@@ -503,11 +632,96 @@ const BookingModal: React.FC<{
     </div>
   );
 };
- 
+
+/**
+ * Landing Page Component
+ */
+const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
+  return (
+    <div className="view-transition">
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-bg"></div>
+        <h1 className="hero-title">
+          Unlock Your Potential <br /> With the Right Mentor
+        </h1>
+        <p className="hero-subtitle">
+          Connect with industry experts, master new skills, and accelerate your
+          career with intelligent matchmaking designed for top-tier engineers.
+        </p>
+        <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '16px 40px', fontSize: '18px' }}>
+          Find Your Mentor ✨
+        </button>
+
+        {/* Stats Grid */}
+        <div className="stats-grid">
+          <div className="glass stat-card">
+            <div className="stat-value">50+</div>
+            <div className="stat-label">Verified Mentors</div>
+          </div>
+          <div className="glass stat-card">
+            <div className="stat-value">98%</div>
+            <div className="stat-label">Match Accuracy</div>
+          </div>
+          <div className="glass stat-card">
+            <div className="stat-value">1.2k</div>
+            <div className="stat-label">Sessions Completed</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="features-section">
+        <div className="container">
+          <h2 className="section-title">Why MentorMatch?</h2>
+          <div className="grid grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+            <div className="glass feature-card">
+              <div className="feature-icon">🎯</div>
+              <h3 style={{ marginBottom: '12px' }}>Intelligent Matching</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                Our propriety Strategy Pattern algorithm pairs you with mentors based on deep skill alignment and experience level.
+              </p>
+            </div>
+            <div className="glass feature-card">
+              <div className="feature-icon">🛡️</div>
+              <h3 style={{ marginBottom: '12px' }}>Expert Verification</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                Every mentor is manually vetted from top tech companies like Google, Meta, and Netflix to ensure premium guidance.
+              </p>
+            </div>
+            <div className="glass feature-card">
+              <div className="feature-icon">📅</div>
+              <h3 style={{ marginBottom: '12px' }}>Seamless Booking</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                Book sessions, manage dates, and receive real-time notifications through our decoupled Observer-based event system.
+              </p>
+            </div>
+          </div>
+
+          {/* Join as Mentor CTA */}
+          <div className="glass cta-card">
+            <h2 style={{ marginBottom: '16px' }}>Ready to share your wisdom?</h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
+              Join our elite circle of mentors and help shape the next generation of engineering leaders.
+            </p>
+            <button className="btn btn-secondary">Apply to Mentor →</button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ padding: '60px 0', borderTop: '1px solid var(--border)', textAlign: 'center', opacity: 0.5 }}>
+        <p className="text-sm">© 2026 MentorMatch Premium • Built with SOLID Principles</p>
+      </footer>
+    </div>
+  );
+};
+
 /**
  * Main App Component
  */
 const MentorMatch: React.FC = () => {
+  const [currentView, setCurrentView] = useState<'landing' | 'marketplace'>('landing');
   const { toasts, addToast, removeToast } = useToast();
   const bookingModal = useModal<Mentor>();
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
@@ -515,8 +729,9 @@ const MentorMatch: React.FC = () => {
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
  
+  const fetchMentors = useCallback(() => repository.getAllMentors(), []);
   const { data: mentors, status: mentorsStatus } = useAsync(
-    () => repository.getAllMentors(),
+    fetchMentors,
     true
   );
  
@@ -591,90 +806,102 @@ const MentorMatch: React.FC = () => {
     <>
       <style>{styles}</style>
  
-      <div className="container">
-        {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>
-            MentorMatch
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
-            Find your perfect mentor match • Premium mentorship made simple
-          </p>
-          {student && (
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '12px' }}>
-              👋 Welcome, <strong>{student.name}</strong> • Looking for: <strong>{student.goals.join(', ')}</strong>
-            </p>
-          )}
-        </div>
- 
-        {/* Search Section */}
-        <div className="glass" style={{ padding: '20px', marginBottom: '32px' }}>
-          <div className="gap-4 flex flex-col">
-            <input
-              type="text"
-              placeholder="Search mentors, skills..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '100%', fontSize: '16px' }}
-            />
- 
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {['React', 'Python', 'TypeScript', 'DevOps', 'UI/UX', 'Mobile'].map((skill) => (
-                <button
-                  key={skill}
-                  className={`badge ${
-                    selectedSkills.includes(skill) ? 'badge-primary' : ''
-                  }`}
-                  onClick={() => toggleSkill(skill)}
-                  style={{
-                    cursor: 'pointer',
-                    background: selectedSkills.includes(skill)
-                      ? 'rgba(99, 102, 241, 0.2)'
-                      : 'rgba(148, 163, 184, 0.1)',
-                    color: selectedSkills.includes(skill)
-                      ? 'var(--primary-light)'
-                      : 'var(--text-secondary)',
-                  }}
-                >
-                  {skill}
-                </button>
-              ))}
+      {currentView === 'landing' ? (
+        <LandingPage onGetStarted={() => setCurrentView('marketplace')} />
+      ) : (
+        <div className="container view-transition">
+          {/* Header */}
+          <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>
+                MentorMatch
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
+                Find your perfect mentor match • Premium mentorship made simple
+              </p>
             </div>
+            <button className="btn btn-secondary btn-sm" onClick={() => setCurrentView('landing')}>
+              ← Back
+            </button>
           </div>
-        </div>
- 
-        {/* Results Section */}
-        <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
-            Top Matches {matchResults.length > 0 && `(${matchResults.length})`}
-          </h2>
- 
-          {mentorsStatus === 'pending' ? (
-            <div className="text-center" style={{ padding: '40px', opacity: 0.6 }}>
-              <div className="loading" style={{ display: 'inline-block', fontSize: '32px' }}>
-                ⏳
-              </div>
-              <p>Loading mentors...</p>
-            </div>
-          ) : matchResults.length > 0 ? (
-            <div className="grid gap-4">
-              {matchResults.map((result) => (
-                <MentorCard
-                  key={result.mentor.id}
-                  mentorResult={result}
-                  onBook={bookingModal.open}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="glass text-center" style={{ padding: '40px' }}>
-              <p style={{ color: 'var(--text-secondary)' }}>
-                No mentors found. Try adjusting your search.
+
+          {student && (
+            <div className="mb-4" style={{ padding: '12px 20px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+                👋 Welcome, <strong>{student.name}</strong> • Looking for: <strong>{student.goals.join(', ')}</strong>
               </p>
             </div>
           )}
+ 
+          {/* Search Section */}
+          <div className="glass" style={{ padding: '20px', marginBottom: '32px' }}>
+            <div className="gap-4 flex flex-col">
+              <input
+                type="text"
+                placeholder="Search mentors, skills..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ width: '100%', fontSize: '16px' }}
+              />
+  
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {['React', 'Python', 'TypeScript', 'DevOps', 'UI/UX', 'Mobile'].map((skill) => (
+                  <button
+                    key={skill}
+                    className={`badge ${
+                      selectedSkills.includes(skill) ? 'badge-primary' : ''
+                    }`}
+                    onClick={() => toggleSkill(skill)}
+                    style={{
+                      cursor: 'pointer',
+                      background: selectedSkills.includes(skill)
+                        ? 'rgba(99, 102, 241, 0.2)'
+                        : 'rgba(148, 163, 184, 0.1)',
+                      color: selectedSkills.includes(skill)
+                        ? 'var(--primary-light)'
+                        : 'var(--text-secondary)',
+                    }}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+  
+          {/* Results Section */}
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px' }}>
+              Top Matches {matchResults.length > 0 && `(${matchResults.length})`}
+            </h2>
+  
+            {mentorsStatus === 'pending' ? (
+              <div className="text-center" style={{ padding: '40px', opacity: 0.6 }}>
+                <div className="loading" style={{ display: 'inline-block', fontSize: '32px' }}>
+                  ⏳
+                </div>
+                <p>Loading mentors...</p>
+              </div>
+            ) : matchResults.length > 0 ? (
+              <div className="grid gap-4">
+                {matchResults.map((result) => (
+                  <MentorCard
+                    key={result.mentor.id}
+                    mentorResult={result}
+                    onBook={bookingModal.open}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="glass text-center" style={{ padding: '40px' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  No mentors found. Try adjusting your search.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
  
       {/* Booking Modal */}
       <BookingModal
