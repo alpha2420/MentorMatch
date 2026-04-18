@@ -37,19 +37,20 @@ export interface Mentor {
   title: string;           // e.g. 'Senior React Engineer @ Netflix'
   company?: string;
   expertise: string[];     // Skills they can teach
-  experience: number;      // Years
+  experience?: number;     // Years (optional)
   hourlyRate: number;      // USD
   rating: number;          // 0–5
   reviews: number;         // Review count
   isVerified: boolean;
-  avatar: string;          // Initials fallback e.g. 'SC'
+  avatar?: string;         // Initials fallback
+  image?: string;          // URL to image
   availability?: string[]; // e.g. ['Mon', 'Wed', 'Fri']
   responseTime?: string;   // e.g. '< 2 hours'
   bio?: string;
 }
 
 export interface Booking {
-  id: string;
+  id?: string;
   studentId: string;
   mentorId: string;
   date: string;            // ISO 8601
@@ -57,7 +58,7 @@ export interface Booking {
   duration: number;        // minutes: 30 | 60 | 90
   status: BookingStatus;
   notes?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 // ─────────────────────────────────────────────

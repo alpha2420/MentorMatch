@@ -87,7 +87,11 @@ function MentorCard({
       )}
 
       <div className="card-top">
-        <Avatar initials={mentor.avatar} size={54} />
+        {mentor.image ? (
+          <img src={mentor.image} alt={mentor.name} style={{ width: 54, height: 54, borderRadius: '50%', objectFit: 'cover' }} />
+        ) : (
+          <Avatar initials={mentor.avatar || mentor.name.charAt(0)} size={54} />
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 className="mentor-name">{mentor.name}</h3>
           <p className="mentor-title">{mentor.title}</p>
@@ -120,8 +124,12 @@ function MentorCard({
           <span className="stat">⭐ {mentor.rating}</span>
           <span className="stat-divider">·</span>
           <span className="stat">{mentor.reviews} reviews</span>
-          <span className="stat-divider">·</span>
-          <span className="stat">{mentor.experience}yr exp</span>
+          {mentor.experience && (
+            <>
+              <span className="stat-divider">·</span>
+              <span className="stat">{mentor.experience}yr exp</span>
+            </>
+          )}
         </div>
         <div className="card-rate">${mentor.hourlyRate}<span>/hr</span></div>
       </div>
@@ -185,7 +193,11 @@ function BookingModal({
         <button className="modal-close" onClick={handleClose} aria-label="Close modal">✕</button>
 
         <div className="modal-header">
-          <Avatar initials={mentor.avatar} size={46} />
+          {mentor.image ? (
+            <img src={mentor.image} alt={mentor.name} style={{ width: 46, height: 46, borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <Avatar initials={mentor.avatar || mentor.name.charAt(0)} size={46} />
+          )}
           <div>
             <h2 className="modal-title">Book a Session</h2>
             <p className="modal-subtitle">with {mentor.name} · ${mentor.hourlyRate}/hr</p>
@@ -646,8 +658,9 @@ export default function MentorMatch() {
   const loadData = useCallback(async () => {
     const [mentors, user] = await Promise.all([
       repository.getAllMentors(),
-      repository.getCurrentUser(),
+      repository.getUserById('user-1'),
     ]);
+    if (!user) throw new Error("No user found");
     return matchingStrategy.rankMentors(user, mentors);
   }, []);
 
@@ -698,7 +711,8 @@ export default function MentorMatch() {
     if (!modal.data) return;
     setIsSubmitting(true);
     try {
-      const user = await repository.getCurrentUser();
+      const user = await repository.getUserById('user-1');
+      if (!user) throw new Error("No user found");
       await repository.saveBooking({
         studentId: user.id,
         mentorId: modal.data.id,

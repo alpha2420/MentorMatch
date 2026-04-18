@@ -1,229 +1,197 @@
 /**
- * repository.ts
- * Repository Pattern – Abstract data access from the UI layer.
- * Swap MockDataRepository for SupabaseRepository without touching the UI.
+ * Repository Layer & Mock Data
+ * Decouples UI from data source - easily switchable to real database
  */
-
-import type { Mentor, User, Booking } from './types';
-
-// ─────────────────────────────────────────────
-// INTERFACE (Contract)
-// ─────────────────────────────────────────────
-
+ 
+import { Mentor, User, Booking } from './types';
+ 
+/**
+ * Repository Interface - Define contract for data sources
+ */
 export interface IRepository {
   getAllMentors(): Promise<Mentor[]>;
-  getMentorById(id: string): Promise<Mentor | undefined>;
+  getMentorById(id: string): Promise<Mentor | null>;
   getAllUsers(): Promise<User[]>;
-  getUserById(id: string): Promise<User | undefined>;
-  getCurrentUser(): Promise<User>;
+  getUserById(id: string): Promise<User | null>;
   getAllBookings(): Promise<Booking[]>;
-  saveBooking(booking: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking>;
+  saveBooking(booking: Booking): Promise<Booking>;
 }
-
-// ─────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────
-
-const MOCK_MENTORS: Mentor[] = [
-  {
-    id: 'mentor_1',
-    name: 'Sarah Chen',
-    title: 'Senior Frontend Engineer',
-    company: 'Netflix',
-    expertise: ['React', 'Next.js', 'TypeScript', 'UI/UX', 'Performance'],
-    experience: 8,
-    hourlyRate: 85,
-    rating: 4.9,
-    reviews: 120,
-    isVerified: true,
-    avatar: 'SC',
-    availability: ['Mon', 'Wed', 'Fri'],
-    responseTime: '< 1 hour',
-    bio: 'I help engineers level up from mid to senior. Specialising in React architecture, performance optimisation, and making code that scales.',
-  },
-  {
-    id: 'mentor_2',
-    name: 'Alex Rodriguez',
-    title: 'ML Engineer',
-    company: 'Google',
-    expertise: ['Python', 'TensorFlow', 'PyTorch', 'Data Science', 'System Design'],
-    experience: 5,
-    hourlyRate: 60,
-    rating: 4.7,
-    reviews: 45,
-    isVerified: true,
-    avatar: 'AR',
-    availability: ['Tue', 'Thu'],
-    responseTime: '< 3 hours',
-    bio: 'From data pipelines to model deployment. I help students break into ML with a practical, project-focused approach.',
-  },
-  {
-    id: 'mentor_3',
-    name: 'Priya Sharma',
-    title: 'Lead Product Manager',
-    company: 'Atlassian',
-    expertise: ['Agile', 'Product Strategy', 'Leadership', 'Career Transition', 'Roadmapping'],
-    experience: 12,
-    hourlyRate: 110,
-    rating: 5.0,
-    reviews: 88,
-    isVerified: true,
-    avatar: 'PS',
-    availability: ['Mon', 'Tue', 'Thu', 'Fri'],
-    responseTime: '< 2 hours',
-    bio: 'Helped 200+ engineers transition into PM roles at FAANG companies. No buzzwords, just honest career advice.',
-  },
-  {
-    id: 'mentor_4',
-    name: 'James Wilson',
-    title: 'Full Stack Engineer',
-    company: 'Stripe',
-    expertise: ['TypeScript', 'Node.js', 'PostgreSQL', 'API Design', 'React'],
-    experience: 6,
-    hourlyRate: 75,
-    rating: 4.5,
-    reviews: 32,
-    isVerified: false,
-    avatar: 'JW',
-    availability: ['Wed', 'Sat', 'Sun'],
-    responseTime: '< 5 hours',
-    bio: 'Payments infrastructure by day, open-source enthusiast by night. I teach clean API design and TypeScript best practices.',
-  },
-  {
-    id: 'mentor_5',
-    name: 'Elena Rostova',
-    title: 'DevOps Architect',
-    company: 'Cloudflare',
-    expertise: ['AWS', 'Docker', 'Kubernetes', 'CI/CD', 'Terraform', 'System Design'],
-    experience: 10,
-    hourlyRate: 95,
-    rating: 4.8,
-    reviews: 56,
-    isVerified: true,
-    avatar: 'ER',
-    availability: ['Mon', 'Wed', 'Fri', 'Sat'],
-    responseTime: '< 2 hours',
-    bio: 'Infrastructure that never sleeps. I help teams go from zero to production-grade cloud deployments.',
-  },
-  {
-    id: 'mentor_6',
-    name: 'Marcus Thompson',
-    title: 'iOS / Android Engineer',
-    company: 'Spotify',
-    expertise: ['Swift', 'Kotlin', 'React Native', 'Mobile Architecture', 'App Store'],
-    experience: 7,
-    hourlyRate: 90,
-    rating: 4.8,
-    reviews: 41,
-    isVerified: true,
-    avatar: 'MT',
-    availability: ['Tue', 'Thu', 'Sat'],
-    responseTime: '< 4 hours',
-    bio: 'I\'ve shipped apps to millions. Whether you\'re building your first iOS app or optimising a React Native codebase, I can help.',
-  },
-];
-
-const MOCK_USERS: User[] = [
-  {
-    id: 'student_777',
-    name: 'Shikhar Singh',
-    role: 'student',
-    goals: ['React', 'TypeScript', 'System Design'],
-    level: 'intermediate',
-    email: 'shikhar@example.com',
-    avatar: 'SS',
-  },
-  {
-    id: 'student_001',
-    name: 'Ananya Patel',
-    role: 'student',
-    goals: ['Python', 'Data Science', 'Machine Learning'],
-    level: 'beginner',
-    email: 'ananya@example.com',
-    avatar: 'AP',
-  },
-  {
-    id: 'student_002',
-    name: 'Rahul Kumar',
-    role: 'student',
-    goals: ['AWS', 'Kubernetes', 'CI/CD'],
-    level: 'advanced',
-    email: 'rahul@example.com',
-    avatar: 'RK',
-  },
-];
-
-const MOCK_BOOKINGS: Booking[] = [
-  {
-    id: 'booking_1',
-    studentId: 'student_777',
-    mentorId: 'mentor_1',
-    date: new Date(Date.now() + 86400000 * 2).toISOString(),
-    topic: 'React performance optimisation',
-    duration: 60,
-    status: 'confirmed',
-    notes: 'Bring the GitHub repo link',
-    createdAt: new Date().toISOString(),
-  },
-];
-
-// ─────────────────────────────────────────────
-// IMPLEMENTATION
-// ─────────────────────────────────────────────
-
-class MockDataRepository implements IRepository {
-  private mentors: Mentor[] = structuredClone(MOCK_MENTORS);
-  private users: User[] = structuredClone(MOCK_USERS);
-  private bookings: Booking[] = structuredClone(MOCK_BOOKINGS);
-
-  private delay(ms = 300): Promise<void> {
-    return new Promise(res => setTimeout(res, ms));
+ 
+/**
+ * Mock Data Repository
+ * Implements the Repository pattern with in-memory data
+ */
+export class MockDataRepository implements IRepository {
+  private mentors: Mentor[] = [
+    {
+      id: 'mentor-1',
+      name: 'Sarah Chen',
+      title: 'Senior React Engineer at Tech Corp',
+      expertise: ['React', 'TypeScript', 'Web Performance', 'CSS'],
+      rating: 4.9,
+      isVerified: true,
+      bio: 'Passionate about helping developers master modern web development.',
+      hourlyRate: 75,
+      responseTime: '< 1 hour',
+      reviews: 127,
+      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
+      availability: ['Monday', 'Wednesday', 'Friday'],
+    },
+    {
+      id: 'mentor-2',
+      name: 'James Wilson',
+      title: 'Full Stack Developer & AI Enthusiast',
+      expertise: ['Python', 'Machine Learning', 'Node.js', 'Django'],
+      rating: 4.8,
+      isVerified: true,
+      bio: 'Expert in building scalable backend systems and ML pipelines.',
+      hourlyRate: 85,
+      responseTime: '< 2 hours',
+      reviews: 94,
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      availability: ['Tuesday', 'Thursday', 'Saturday'],
+    },
+    {
+      id: 'mentor-3',
+      name: 'Priya Patel',
+      title: 'Product Designer & UX Strategist',
+      expertise: ['UI/UX Design', 'Figma', 'Design Systems', 'User Research'],
+      rating: 4.7,
+      isVerified: true,
+      bio: 'Helping designers build thoughtful, user-centered products.',
+      hourlyRate: 65,
+      responseTime: '< 1 hour',
+      reviews: 156,
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
+      availability: ['Monday', 'Tuesday', 'Thursday'],
+    },
+    {
+      id: 'mentor-4',
+      name: 'Alex Rodriguez',
+      title: 'DevOps Engineer & Cloud Architect',
+      expertise: ['Kubernetes', 'AWS', 'Docker', 'CI/CD', 'Infrastructure'],
+      rating: 4.6,
+      isVerified: true,
+      bio: 'Specializing in scalable cloud infrastructure and deployment.',
+      hourlyRate: 95,
+      responseTime: '< 3 hours',
+      reviews: 78,
+      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
+      availability: ['Wednesday', 'Friday', 'Sunday'],
+    },
+    {
+      id: 'mentor-5',
+      name: 'Emma Thompson',
+      title: 'JavaScript Specialist & Educator',
+      expertise: ['JavaScript', 'Vue.js', 'Next.js', 'Testing'],
+      rating: 4.9,
+      isVerified: true,
+      bio: 'Dedicated to making web development concepts crystal clear.',
+      hourlyRate: 70,
+      responseTime: '< 30 min',
+      reviews: 203,
+      image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
+      availability: ['Daily'],
+    },
+    {
+      id: 'mentor-6',
+      name: 'Marcus Johnson',
+      title: 'Mobile App Developer (iOS/Android)',
+      expertise: ['Swift', 'Kotlin', 'React Native', 'Mobile UI'],
+      rating: 4.5,
+      isVerified: true,
+      bio: 'Building beautiful and performant mobile applications.',
+      hourlyRate: 80,
+      responseTime: '< 2 hours',
+      reviews: 112,
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      availability: ['Tuesday', 'Thursday', 'Saturday'],
+    },
+  ];
+ 
+  private users: User[] = [
+    {
+      id: 'user-1',
+      name: 'Shikhar',
+      role: 'student',
+      goals: ['Learn React', 'Master TypeScript', 'Build Production Apps'],
+      level: 'intermediate',
+      email: 'shikhar@example.com',
+    },
+    {
+      id: 'user-2',
+      name: 'Anjali',
+      role: 'student',
+      goals: ['Python Fundamentals', 'Web Scraping', 'Data Analysis'],
+      level: 'beginner',
+      email: 'anjali@example.com',
+    },
+    {
+      id: 'user-3',
+      name: 'Rohan',
+      role: 'student',
+      goals: ['Advanced React Patterns', 'System Design', 'DevOps'],
+      level: 'advanced',
+      email: 'rohan@example.com',
+    },
+  ];
+ 
+  private bookings: Booking[] = [
+    {
+      id: 'booking-1',
+      studentId: 'user-1',
+      mentorId: 'mentor-1',
+      date: '2024-01-15',
+      topic: 'React Performance Optimization',
+      status: 'confirmed',
+      duration: 60,
+    },
+  ];
+ 
+  /**
+   * Simulates async database call
+   */
+  private async delay(ms: number = 100): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
+ 
   async getAllMentors(): Promise<Mentor[]> {
     await this.delay();
-    return [...this.mentors];
+    return this.mentors;
   }
-
-  async getMentorById(id: string): Promise<Mentor | undefined> {
-    await this.delay(100);
-    return this.mentors.find(m => m.id === id);
+ 
+  async getMentorById(id: string): Promise<Mentor | null> {
+    await this.delay();
+    return this.mentors.find((m) => m.id === id) || null;
   }
-
+ 
   async getAllUsers(): Promise<User[]> {
     await this.delay();
-    return [...this.users];
+    return this.users;
   }
-
-  async getUserById(id: string): Promise<User | undefined> {
-    await this.delay(100);
-    return this.users.find(u => u.id === id);
+ 
+  async getUserById(id: string): Promise<User | null> {
+    await this.delay();
+    return this.users.find((u) => u.id === id) || null;
   }
-
-  async getCurrentUser(): Promise<User> {
-    await this.delay(100);
-    // Default logged-in user
-    return this.users[0];
-  }
-
+ 
   async getAllBookings(): Promise<Booking[]> {
     await this.delay();
-    return [...this.bookings];
+    return this.bookings;
   }
-
-  async saveBooking(
-    data: Omit<Booking, 'id' | 'createdAt'>
-  ): Promise<Booking> {
-    await this.delay(400);
-    const booking: Booking = {
-      ...data,
-      id: `booking_${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
+ 
+  async saveBooking(booking: Booking): Promise<Booking> {
+    await this.delay(150);
+    // Simulate ID generation
+    if (!booking.id) {
+      booking.id = `booking-${Date.now()}`;
+    }
     this.bookings.push(booking);
     return booking;
   }
 }
-
-// Export singleton — swap this class for SupabaseRepository in Phase 2
-export const repository: IRepository = new MockDataRepository();
+ 
+/**
+ * Singleton instance
+ */
+export const repository = new MockDataRepository();
