@@ -3,7 +3,7 @@
  * Core business logic for calculating mentor-student match scores
  */
  
-import { Mentor, User, MatchResult, SearchQuery } from './types';
+import { Mentor, User, MatchResult } from './types';
  
 /**
  * Scoring configuration for tuning match algorithm
@@ -122,7 +122,7 @@ export class SkillBasedMatchingStrategy implements IMatchingStrategy {
   /**
    * Determine if mentor's experience level matches student's level
    */
-  private calculateExperienceAlignment(studentLevel: string, mentorRating: number): number {
+  private calculateExperienceAlignment(_studentLevel: string, mentorRating: number): number {
     // Higher rating indicates more experienced mentor
     const ratingNormalized = mentorRating / 5;
  
@@ -154,7 +154,7 @@ export class SkillBasedMatchingStrategy implements IMatchingStrategy {
    * Generate human-readable explanations for the match
    */
   private generateMatchReasons(
-    student: User,
+    _student: User,
     mentor: Mentor,
     skillScore: number,
     experienceScore: number

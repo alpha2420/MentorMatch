@@ -4,7 +4,7 @@
  */
  
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { MatchResult, Mentor, Booking } from './types';
+import { Mentor } from './types';
  
 /**
  * Hook for managing search state and filtering

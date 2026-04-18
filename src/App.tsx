@@ -924,7 +924,7 @@ const LandingPage: React.FC<{
               <div key={i} className="glass" style={{ padding: '32px' }}>
                 <p style={{ fontStyle: 'italic', color: 'var(--text-secondary)', fontSize: '16px', marginBottom: '24px' }}>"{t.text}"</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', background: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontWeight: '700' }}>{t.name[0]}</div>
+                  <div style={{ width: '40px', height: '40px', background: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700' }}>{t.name[0]}</div>
                   <div>
                     <div style={{ fontWeight: '700', fontSize: '14px' }}>{t.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t.role}</div>
@@ -1015,7 +1015,6 @@ const MentorMatch: React.FC = () => {
   const bookingModal = useModal<Mentor>();
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
   const [student, setStudent] = useState<User | null>(null);
-  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
  
   const fetchMentors = useCallback(() => repository.getAllMentors(), []);
@@ -1050,10 +1049,8 @@ const MentorMatch: React.FC = () => {
   // Calculate matches when student or mentors change
   useEffect(() => {
     if (student && filteredMentors.length > 0) {
-      setIsLoadingMatches(true);
       const matches = matchingStrategy.rankMentors(student, filteredMentors);
       setMatchResults(matches);
-      setIsLoadingMatches(false);
     }
   }, [student, filteredMentors]);
  
