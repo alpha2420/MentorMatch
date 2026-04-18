@@ -21,78 +21,82 @@ const styles = `
   }
  
   :root {
-    --primary: #6366f1;
-    --primary-light: #818cf8;
-    --primary-dark: #4f46e5;
+    --primary: #4f46e5;
+    --primary-light: #6366f1;
+    --primary-dark: #3730a3;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
-    --bg-primary: #0f172a;
-    --bg-secondary: rgba(30, 41, 59, 0.8);
-    --bg-glass: rgba(15, 23, 42, 0.7);
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --border: rgba(148, 163, 184, 0.1);
-    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.8);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border: rgba(226, 232, 240, 0.8);
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   }
  
   html, body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f35 100%);
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
+    scroll-behavior: smooth;
   }
  
-  /* Glassmorphic card */
+  /* Glassmorphic card - Light Mode Refined */
   .glass {
     background: var(--bg-glass);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
   }
  
   .glass-hover:hover {
-    background: rgba(30, 41, 59, 0.9);
-    border-color: rgba(148, 163, 184, 0.2);
-    transform: translateY(-2px);
+    background: #ffffff;
+    border-color: var(--primary-light);
+    transform: translateY(-4px);
     box-shadow: var(--shadow);
   }
  
   /* Buttons */
   .btn {
-    padding: 10px 24px;
+    padding: 12px 28px;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 12px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 10px;
   }
  
   .btn-primary {
     background: var(--primary);
     color: white;
+    box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
   }
  
   .btn-primary:hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
   }
  
   .btn-secondary {
-    background: transparent;
+    background: white;
     border: 1px solid var(--border);
     color: var(--text-primary);
   }
  
   .btn-secondary:hover {
-    background: rgba(99, 102, 241, 0.1);
-    border-color: var(--primary);
+    background: var(--bg-primary);
+    border-color: var(--primary-light);
   }
  
   .btn-success {
@@ -110,35 +114,34 @@ const styles = `
   }
  
   /* Input fields */
-  input, textarea {
-    background: rgba(30, 41, 59, 0.5);
+  input, textarea, select {
+    background: white;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 14px;
     color: var(--text-primary);
-    font-size: 14px;
-    transition: all 0.3s ease;
+    font-size: 15px;
+    transition: all 0.2s ease;
   }
  
-  input:focus, textarea:focus {
+  input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--primary);
-    background: rgba(30, 41, 59, 0.8);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
   }
  
   /* Badges */
   .badge {
     display: inline-block;
-    padding: 4px 12px;
-    border-radius: 999px;
-    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 13px;
     font-weight: 600;
   }
  
   .badge-primary {
-    background: rgba(99, 102, 241, 0.2);
-    color: var(--primary-light);
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
   }
  
   .badge-success {
@@ -634,84 +637,250 @@ const BookingModal: React.FC<{
 };
 
 /**
+ * FAQ Item Component
+ */
+const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="glass" style={{ marginBottom: '16px', overflow: 'hidden' }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          padding: '20px 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          textAlign: 'left',
+          fontSize: '16px',
+          fontWeight: '600',
+          color: 'var(--text-primary)',
+        }}
+      >
+        {question}
+        <span style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>
+          ▼
+        </span>
+      </button>
+      {isOpen && (
+        <div style={{ padding: '0 24px 20px', color: 'var(--text-secondary)', fontSize: '15px', lineHeight: '1.6' }}>
+          {answer}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
  * Landing Page Component
  */
 const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   return (
     <div className="view-transition">
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-bg"></div>
-        <h1 className="hero-title">
-          Unlock Your Potential <br /> With the Right Mentor
-        </h1>
-        <p className="hero-subtitle">
-          Connect with industry experts, master new skills, and accelerate your
-          career with intelligent matchmaking designed for top-tier engineers.
-        </p>
-        <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '16px 40px', fontSize: '18px' }}>
-          Find Your Mentor ✨
-        </button>
+      {/* Navigation */}
+      <nav className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
+        <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)' }}>MentorMatch</h2>
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+          <a href="#how-it-works" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '500' }}>Process</a>
+          <a href="#features" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '500' }}>Features</a>
+          <button className="btn btn-primary" onClick={onGetStarted}>Try Marketplace</button>
+        </div>
+      </nav>
 
-        {/* Stats Grid */}
-        <div className="stats-grid">
-          <div className="glass stat-card">
-            <div className="stat-value">50+</div>
-            <div className="stat-label">Verified Mentors</div>
+      {/* Hero Section */}
+      <section className="hero-section" style={{ padding: '40px 0 100px' }}>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '60px', flexWrap: 'wrap-reverse' }}>
+          <div style={{ flex: '1 1 500px' }}>
+            <div className="badge badge-primary" style={{ marginBottom: '20px' }}>✨ Now in Public Beta</div>
+            <h1 className="hero-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}>
+              Master Engineering <br /> With 1-on-1 Mentoring
+            </h1>
+            <p className="hero-subtitle" style={{ margin: '24px 0 40px' }}>
+              Connect with top engineers from Google, Meta, and Netflix. 
+              Get personalized guidance to accelerate your career and master modern tech stacks.
+            </p>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '16px 40px', fontSize: '18px' }}>
+                Find Your Match Now
+              </button>
+              <button className="btn btn-secondary" style={{ padding: '16px 30px' }}>
+                Become a Mentor
+              </button>
+            </div>
           </div>
-          <div className="glass stat-card">
-            <div className="stat-value">98%</div>
-            <div className="stat-label">Match Accuracy</div>
+          <div style={{ flex: '1 1 400px', position: 'relative' }}>
+            <img 
+              src="/Users/shikharsingh/.gemini/antigravity/brain/dc4e7a88-552b-4093-b5c0-0e85cd38ec0f/mentormatch_hero_light_1776538730538.png" 
+              alt="Mentorship Visualization" 
+              className="glass"
+              style={{ width: '100%', borderRadius: '24px', transform: 'perspective(1000px) rotateY(-5deg)', boxShadow: '20px 20px 60px rgba(0,0,0,0.1)' }}
+            />
           </div>
-          <div className="glass stat-card">
-            <div className="stat-value">1.2k</div>
-            <div className="stat-label">Sessions Completed</div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section style={{ padding: '40px 0' }}>
+        <div className="container">
+          <div className="stats-grid" style={{ margin: '0 auto' }}>
+            <div className="glass stat-card">
+              <div className="stat-value">500+</div>
+              <div className="stat-label">Experts Mentors</div>
+            </div>
+            <div className="glass stat-card">
+              <div className="stat-value">12k+</div>
+              <div className="stat-label">Sessions Held</div>
+            </div>
+            <div className="glass stat-card">
+              <div className="stat-value">4.9/5</div>
+              <div className="stat-label">Avg. Satisfaction</div>
+            </div>
+            <div className="glass stat-card">
+              <div className="stat-value">100%</div>
+              <div className="stat-label">Career Growth</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it Works */}
+      <section id="how-it-works" style={{ padding: '100px 0' }}>
+        <div className="container">
+          <h2 className="section-title">The Path to Mastery</h2>
+          <div className="grid grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+            <div className="glass" style={{ padding: '40px' }}>
+              <div className="step-number">1</div>
+              <h3 style={{ marginBottom: '16px' }}>Define Your Goals</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>Tell us what you want to achieve — from mastering React to scaling distributed systems.</p>
+            </div>
+            <div className="glass" style={{ padding: '40px' }}>
+              <div className="step-number">2</div>
+              <h3 style={{ marginBottom: '16px' }}>Get Matched</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>Our Strategy algorithms pair you with a mentor who has been exactly where you are.</p>
+            </div>
+            <div className="glass" style={{ padding: '40px' }}>
+              <div className="step-number">3</div>
+              <h3 style={{ marginBottom: '16px' }}>Book & Accelerate</h3>
+              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>Schedule sessions, set milestones, and start your journey with expert 1-on-1 guidance.</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="features-section">
+      <section id="features" className="features-section" style={{ background: '#f1f5f9' }}>
         <div className="container">
-          <h2 className="section-title">Why MentorMatch?</h2>
+          <h2 className="section-title">Built for Serious Engineers</h2>
           <div className="grid grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-            <div className="glass feature-card">
-              <div className="feature-icon">🎯</div>
-              <h3 style={{ marginBottom: '12px' }}>Intelligent Matching</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                Our propriety Strategy Pattern algorithm pairs you with mentors based on deep skill alignment and experience level.
-              </p>
-            </div>
-            <div className="glass feature-card">
-              <div className="feature-icon">🛡️</div>
-              <h3 style={{ marginBottom: '12px' }}>Expert Verification</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                Every mentor is manually vetted from top tech companies like Google, Meta, and Netflix to ensure premium guidance.
-              </p>
-            </div>
-            <div className="glass feature-card">
-              <div className="feature-icon">📅</div>
-              <h3 style={{ marginBottom: '12px' }}>Seamless Booking</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                Book sessions, manage dates, and receive real-time notifications through our decoupled Observer-based event system.
-              </p>
-            </div>
+            {[
+              { icon: '🎯', title: 'Intelligent Ranking', desc: 'Strategy-based matching that actually understands your level.' },
+              { icon: '🛡️', title: 'Vetted Quality', desc: 'Every mentor is manually screened for technical and soft skills.' },
+              { icon: '📅', title: 'Smart Scheduling', desc: 'Observer-driven notifications keep your sessions on track.' },
+              { icon: '🚀', title: 'Project-First', desc: 'Learn by building real-world software with expert code reviews.' },
+              { icon: '💎', title: 'Premium Interface', desc: 'Minimalist, distraction-free environment for deep learning.' },
+              { icon: '🤝', title: 'Lifetime Network', desc: 'Join an elite circle of engineers across the globe.' },
+            ].map((f, i) => (
+              <div key={i} className="glass feature-card">
+                <div className="feature-icon">{f.icon}</div>
+                <h3 style={{ marginBottom: '12px' }}>{f.title}</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>{f.desc}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          {/* Join as Mentor CTA */}
-          <div className="glass cta-card">
-            <h2 style={{ marginBottom: '16px' }}>Ready to share your wisdom?</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
-              Join our elite circle of mentors and help shape the next generation of engineering leaders.
+      {/* Testimonials */}
+      <section style={{ padding: '100px 0' }}>
+        <div className="container">
+          <h2 className="section-title">Success Stories</h2>
+          <div className="grid grid-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px' }}>
+            {[
+              { name: 'Alex Rivera', role: 'Fullstack Dev at Stripe', text: 'MentorMatch found me a Principal Engineer who helped me navigate my promotion in just 3 months.' },
+              { name: 'Sarah Chen', role: 'Frontend Engineer', text: 'The depth of knowledge in the mentor pool is staggering. Finally, a platform that understands engineering.' },
+              { name: 'David Miller', role: 'DevOps Lead', text: 'Scaling our infrastructure was a nightmare until I matched with a mentor who had done it at Google scale.' },
+            ].map((t, i) => (
+              <div key={i} className="glass" style={{ padding: '32px' }}>
+                <p style={{ fontStyle: 'italic', color: 'var(--text-secondary)', fontSize: '16px', marginBottom: '24px' }}>"{t.text}"</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', background: '#e2e8f0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontWeight: '700' }}>{t.name[0]}</div>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '14px' }}>{t.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ padding: '100px 0', background: '#f8fafc' }}>
+        <div className="container" style={{ maxWidth: '800px' }}>
+          <h2 className="section-title">Common Questions</h2>
+          <FaqItem 
+            question="How does mentor matching work?" 
+            answer="We use a custom implementation of the Strategy Pattern to evaluate your goals against mentor expertise, experience level, and availability to find the highest probability of success."
+          />
+          <FaqItem 
+            question="Are the mentors truly verified?" 
+            answer="Yes. Every mentor undergoes a multi-stage vetting process including identity verification, technical screening, and an interview to ensure high-quality mentorship."
+          />
+          <FaqItem 
+            question="What happens after I book a session?" 
+            answer="Once you book, our Observer-based Notification Service triggers. You and your mentor get instant confirmation, and we handle calendar syncing and reminder updates automatically."
+          />
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section style={{ padding: '100px 0', textAlign: 'center' }}>
+        <div className="container">
+          <div className="glass cta-card" style={{ padding: '80px 40px' }}>
+            <h1 style={{ fontSize: '40px', marginBottom: '20px' }}>Ready to Level Up?</h1>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '600px', margin: '0 auto 40px' }}>
+              Join thousands of engineers who are already accelerating their careers <br /> through expert human guidance.
             </p>
-            <button className="btn btn-secondary">Apply to Mentor →</button>
+            <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '18px 50px', fontSize: '20px' }}>
+              Enter Marketplace Now
+            </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{ padding: '60px 0', borderTop: '1px solid var(--border)', textAlign: 'center', opacity: 0.5 }}>
-        <p className="text-sm">© 2026 MentorMatch Premium • Built with SOLID Principles</p>
+      <footer style={{ padding: '80px 0 40px', borderTop: '1px solid var(--border)', background: '#fff' }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px' }}>
+          <div style={{ maxWidth: '300px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--primary)', marginBottom: '16px' }}>MentorMatch</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6' }}>The premium marketplace for elite engineering mentorship. Built with SOLID principles for high-performance learning.</p>
+          </div>
+          <div style={{ display: 'flex', gap: '60px' }}>
+            <div>
+              <h4 style={{ marginBottom: '20px' }}>Platform</h4>
+              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                <li>Marketplace</li>
+                <li>Mentors</li>
+                <li>Success Stories</li>
+              </ul>
+            </div>
+            <div>
+              <h4 style={{ marginBottom: '20px' }}>Company</h4>
+              <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                <li>About Us</li>
+                <li>Privacy Policy</li>
+                <li>Contact</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="container" style={{ marginTop: '60px', opacity: 0.5, textAlign: 'center' }}>
+          <p className="text-sm">© 2026 MentorMatch Premium • Secure & Verified Mentorship</p>
+        </div>
       </footer>
     </div>
   );
