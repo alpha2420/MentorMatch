@@ -19,7 +19,7 @@ export default defineConfig({
     target: 'ES2020',
     outDir: 'dist',
     sourcemap: true,
-    minify: 'terser',
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: {
