@@ -1,119 +1,181 @@
 /**
- * notificationService.ts
- * Observer Pattern – Decoupled event bus for application notifications.
- * Add new listeners (email, analytics, logging) without changing existing code.
+ * Notification Service - Observer Pattern
+ * Decoupled event system for handling booking notifications
  */
-
-import type { NotificationEvent, NotificationEventType, NotificationListener } from './types';
-
-// ─────────────────────────────────────────────
-// INTERFACE (Contract)
-// ─────────────────────────────────────────────
-
+ 
+import { NotificationEvent, NotificationEventType, NotificationListener } from './types';
+ 
+/**
+ * Event emitter interface
+ */
 export interface IEventEmitter {
   on(eventType: NotificationEventType, listener: NotificationListener): void;
   off(eventType: NotificationEventType, listener: NotificationListener): void;
   emit(event: NotificationEvent): void;
-  getEventHistory(): NotificationEvent[];
-  clearHistory(): void;
 }
-
-// ─────────────────────────────────────────────
-// IMPLEMENTATION
-// ─────────────────────────────────────────────
-
-class NotificationService implements IEventEmitter {
-  private listeners = new Map<NotificationEventType, Set<NotificationListener>>();
-  private history: NotificationEvent[] = [];
-
+ 
+/**
+ * Notification Service
+ * Manages subscriptions and broadcasts events to listeners
+ * Implements Observer Pattern
+ */
+export class NotificationService implements IEventEmitter {
+  private listeners: Map<NotificationEventType, Set<NotificationListener>> = new Map();
+  private eventHistory: NotificationEvent[] = [];
+ 
+  /**
+   * Subscribe to a notification event
+   */
   on(eventType: NotificationEventType, listener: NotificationListener): void {
     if (!this.listeners.has(eventType)) {
       this.listeners.set(eventType, new Set());
     }
     this.listeners.get(eventType)!.add(listener);
   }
-
+ 
+  /**
+   * Unsubscribe from a notification event
+   */
   off(eventType: NotificationEventType, listener: NotificationListener): void {
-    this.listeners.get(eventType)?.delete(listener);
+    const eventListeners = this.listeners.get(eventType);
+    if (eventListeners) {
+      eventListeners.delete(listener);
+    }
   }
-
+ 
+  /**
+   * Emit an event to all subscribed listeners
+   */
   emit(event: NotificationEvent): void {
+    // Add timestamp if not present
+    if (!event.timestamp) {
+      event.timestamp = new Date();
+    }
+ 
     // Store in history
-    this.history.push(event);
-
-    // Broadcast to all listeners for this event type
-    const listeners = this.listeners.get(event.type);
-    if (listeners) {
-      listeners.forEach(listener => {
+    this.eventHistory.push(event);
+ 
+    // Notify all listeners
+    const eventListeners = this.listeners.get(event.type);
+    if (eventListeners) {
+      eventListeners.forEach((listener) => {
         try {
           listener(event);
-        } catch (err) {
-          console.error(`[NotificationService] Listener error for "${event.type}":`, err);
+        } catch (error) {
+          console.error(`Error in notification listener for ${event.type}:`, error);
         }
       });
     }
-
-    // Console log for development visibility
-    console.log(`[Event: ${event.type}] Student ${event.studentId} → Mentor ${event.mentorId}`, event);
+ 
+    // Log for debugging
+    this.logEvent(event);
   }
-
+ 
+  /**
+   * Get event history
+   */
   getEventHistory(): NotificationEvent[] {
-    return [...this.history];
+    return [...this.eventHistory];
   }
-
+ 
+  /**
+   * Clear event history
+   */
   clearHistory(): void {
-    this.history = [];
+    this.eventHistory = [];
+  }
+ 
+  /**
+   * Get listeners count for a specific event
+   */
+  getListenerCount(eventType: NotificationEventType): number {
+    return this.listeners.get(eventType)?.size ?? 0;
+  }
+ 
+  /**
+   * Log events (in production, could send to logging service)
+   */
+  private logEvent(event: NotificationEvent): void {
+    console.log(
+      `[NotificationService] Event: ${event.type}`,
+      `StudentID: ${event.studentId}, MentorID: ${event.mentorId}`
+    );
   }
 }
-
-// ─────────────────────────────────────────────
-// LISTENER FACTORIES
-// Create pre-built listeners to attach to the service
-// ─────────────────────────────────────────────
-
+ 
 /**
- * Toast Listener – triggers a callback with a user-facing message.
- * Connect this to the useToast hook in the UI layer.
+ * Singleton instance
+ */
+export const notificationService = new NotificationService();
+ 
+/**
+ * Example listeners for different use cases
+ */
+ 
+/**
+ * Toast notification listener
  */
 export function createToastListener(
-  onMessage: (message: string, type: 'success' | 'error' | 'info') => void
+  onNotification: (message: string, type: string) => void
 ): NotificationListener {
   return (event: NotificationEvent) => {
+    let message = '';
+    let type = 'info';
+ 
     switch (event.type) {
       case 'session.requested':
-        onMessage('🎉 Session requested! Check your bookings.', 'success');
+        message = '✨ Booking request sent successfully!';
+        type = 'success';
         break;
       case 'session.confirmed':
-        onMessage('✅ Your session has been confirmed!', 'success');
+        message = '🎉 Your session has been confirmed!';
+        type = 'success';
         break;
       case 'booking.cancelled':
-        onMessage('❌ Booking was cancelled.', 'error');
+        message = '❌ Booking has been cancelled.';
+        type = 'error';
         break;
-      default:
-        onMessage('📬 You have a new notification.', 'info');
     }
+ 
+    onNotification(message, type);
   };
 }
-
+ 
 /**
- * Email Listener (stub) – in Phase 2, call SendGrid/Resend API here.
+ * Email notification listener (stub for future implementation)
  */
 export function createEmailListener(): NotificationListener {
-  return (event: NotificationEvent) => {
-    // TODO Phase 2: call SendGrid API
-    console.log(`[EmailService] Would send email for event: ${event.type}`);
+  return async (event: NotificationEvent) => {
+    // TODO: Integrate with SendGrid/Resend
+    const emailData = {
+      studentId: event.studentId,
+      mentorId: event.mentorId,
+      eventType: event.type,
+      timestamp: event.timestamp,
+    };
+ 
+    console.log('[EmailListener] Would send email:', emailData);
+ 
+    // Example: await sendEmail(emailData);
   };
 }
-
+ 
 /**
- * Analytics Listener (stub) – in Phase 2, send to Mixpanel/PostHog.
+ * Analytics listener (stub for future implementation)
  */
 export function createAnalyticsListener(): NotificationListener {
   return (event: NotificationEvent) => {
-    // TODO Phase 2: track(event.type, { studentId, mentorId })
-    console.log(`[Analytics] Tracking event: ${event.type}`);
+    // TODO: Integrate with analytics service (e.g., Mixpanel, Segment)
+    const analyticsData = {
+      event: event.type,
+      studentId: event.studentId,
+      mentorId: event.mentorId,
+      timestamp: event.timestamp,
+      context: event.data,
+    };
+ 
+    console.log('[AnalyticsListener] Tracking:', analyticsData);
+ 
+    // Example: analytics.track(analyticsData);
   };
 }
-
-// Export singleton
-export const notificationService: IEventEmitter = new NotificationService();

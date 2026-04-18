@@ -92,7 +92,7 @@ export interface NotificationEvent {
   mentorId: string;
   bookingId?: string;
   timestamp: Date;
-  meta?: Record<string, unknown>;
+  data?: Record<string, unknown>;
 }
 
 export type NotificationListener = (event: NotificationEvent) => void;
