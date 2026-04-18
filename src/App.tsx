@@ -340,7 +340,7 @@ const styles = `
     font-size: clamp(1.1rem, 3vw, 1.4rem);
     color: var(--text-secondary);
     max-width: 600px;
-    margin-bottom: 40px;
+    margin: 0 auto 40px;
     line-height: 1.6;
   }
 
@@ -693,16 +693,16 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
       {/* Hero Section */}
       <section className="hero-section" style={{ padding: '40px 0 100px' }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '60px', flexWrap: 'wrap-reverse' }}>
-          <div style={{ flex: '1 1 500px' }}>
-            <div className="badge badge-primary" style={{ marginBottom: '20px' }}>✨ Now in Public Beta</div>
-            <h1 className="hero-title" style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}>
+          <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div className="badge badge-primary" style={{ marginBottom: '24px' }}>✨ Now in Public Beta</div>
+            <h1 className="hero-title">
               Master Engineering <br /> With 1-on-1 Mentoring
             </h1>
-            <p className="hero-subtitle" style={{ margin: '24px 0 40px' }}>
+            <p className="hero-subtitle">
               Connect with top engineers from Google, Meta, and Netflix. 
               Get personalized guidance to accelerate your career and master modern tech stacks.
             </p>
-            <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
               <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '16px 40px', fontSize: '18px' }}>
                 Find Your Match Now
               </button>
