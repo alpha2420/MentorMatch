@@ -4,6 +4,7 @@
  */
  
 import { Mentor, User, Booking } from './types';
+import { supabase } from './supabaseClient';
  
 /**
  * Repository Interface - Define contract for data sources
@@ -190,8 +191,78 @@ export class MockDataRepository implements IRepository {
     return booking;
   }
 }
- 
+
+/**
+ * Supabase Production Repository
+ * Connects to live database
+ */
+export class SupabaseRepository implements IRepository {
+  async getAllMentors(): Promise<Mentor[]> {
+    const { data, error } = await supabase
+      .from('mentors')
+      .select('*')
+      .order('rating', { ascending: false });
+    
+    if (error) throw error;
+    return data as Mentor[];
+  }
+
+  async getMentorById(id: string): Promise<Mentor | null> {
+    const { data, error } = await supabase
+      .from('mentors')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) return null;
+    return data as Mentor;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*');
+    
+    if (error) throw error;
+    return data as User[];
+  }
+
+  async getUserById(id: string): Promise<User | null> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) return null;
+    return data as User;
+  }
+
+  async getAllBookings(): Promise<Booking[]> {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('date', { ascending: false });
+    
+    if (error) throw error;
+    return data as Booking[];
+  }
+
+  async saveBooking(booking: Booking): Promise<Booking> {
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([booking])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Booking;
+  }
+}
+
 /**
  * Singleton instance
+ * In production, we swap MockData for Supabase
  */
-export const repository = new MockDataRepository();
+const isSupabaseConfigured = !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
+export const repository: IRepository = isSupabaseConfigured ? new SupabaseRepository() : new MockDataRepository();

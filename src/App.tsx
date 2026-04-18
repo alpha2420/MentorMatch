@@ -9,6 +9,7 @@ import { repository } from './repository';
 import { matchingStrategy } from './matchingStrategy';
 import { notificationService, createToastListener } from './notificationService';
 import { useSearch, useToast, useModal, useAsync, useBookingForm } from './hooks';
+import { supabase } from './supabaseClient';
  
 /**
  * Styles - Glassmorphic Design System
@@ -684,23 +685,67 @@ const AuthPage: React.FC<{
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      const mockUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: mode === 'signup' ? name : email.split('@')[0],
-        email: email,
-        role: 'student',
-        level: 'beginner',
-        goals: []
-      };
+    try {
+      if (mode === 'signup') {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password
+        });
+        
+        if (authError) throw authError;
+        if (!authData.user) throw new Error('Signup failed');
+
+        const mockUser: User = {
+          id: authData.user.id,
+          name: name || email.split('@')[0],
+          email: email,
+          role: 'student',
+          level: 'beginner',
+          goals: []
+        };
+        
+        // Try to create profile in DB
+        const { error: insertError } = await supabase.from('users').insert([mockUser]);
+        if (insertError) {
+          console.warn('Profile creation issue:', insertError);
+        }
+
+        onSuccess(mockUser);
+      } else {
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (authError) throw authError;
+        if (!authData.user) throw new Error('Login failed');
+
+        const userProfile = await repository.getUserById(authData.user.id);
+        
+        if (userProfile) {
+          onSuccess(userProfile);
+        } else {
+          // Fallback if no profile is found but auth succeeds
+          const fallbackUser: User = {
+            id: authData.user.id,
+            name: email.split('@')[0],
+            email: email,
+            role: 'student',
+            level: 'beginner',
+            goals: []
+          };
+          onSuccess(fallbackUser);
+        }
+      }
+    } catch (error: any) {
+      alert(error.message || 'Authentication failed');
+    } finally {
       setIsLoading(false);
-      onSuccess(mockUser);
-    }, 1500);
+    }
   };
 
   return (
@@ -1039,12 +1084,41 @@ const MentorMatch: React.FC = () => {
     };
   }, [addToast]);
  
-  // Load current student (Mocked for initial load, will be replaced by Auth)
+  // Load and subscribe to Supabase Auth session
   useEffect(() => {
-    if (user) {
-      setStudent(user);
-    }
-  }, [user]);
+    let mounted = true;
+
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && mounted) {
+        repository.getUserById(session.user.id).then(profile => {
+          if (profile && mounted) {
+            setUser(profile);
+            setStudent(profile);
+          }
+        });
+      }
+    });
+
+    // Listen to changes (login/logout/refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const profile = await repository.getUserById(session.user.id);
+        if (profile && mounted) {
+          setUser(profile);
+          setStudent(profile);
+        }
+      } else if (mounted) {
+        setUser(null);
+        setStudent(null);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
  
   // Calculate matches when student or mentors change
   useEffect(() => {
