@@ -8,9 +8,9 @@
   "homepage": "https://mentormatch.dev",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/mentormatch.git"
+    "url": "https://github.com/alpha2420/MentorMatch.git"
   },
-  "author": "Your Name",
+  "author": "Shikhar Singh",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0",
