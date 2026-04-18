@@ -1,92 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MentorMatch | Professional Mentorship</title>
-    <meta name="description" content="Connect with expert mentors to boost your learning and career">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/style.css">
-</head>
-<body>
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-    
-    <nav class="navbar glass">
-        <div class="nav-container">
-            <h1 class="logo">Mentor<span>Match</span></h1>
-            <div class="nav-links">
-                <a href="#" class="active">Find Mentors</a>
-                <a href="#">My Sessions</a>
-                <button class="btn-outline">Profile</button>
-            </div>
-        </div>
-    </nav>
-
-    <header class="hero">
-        <div class="hero-content">
-            <div class="badge-pill animate-up">v2.0 Beta Live</div>
-            <h2 class="animate-up delay-1">Accelerate Your Learning</h2>
-            <p class="animate-up delay-2">Connect with industry experts who have been in your shoes. Get personalized guidance to reach your goals faster.</p>
-            
-            <div class="search-bar glass animate-up delay-3">
-                <input type="text" id="searchInput" placeholder="What skill do you want to master? (e.g., React, Python)">
-                <button id="searchBtn" class="btn-primary">Find Match</button>
-            </div>
-            
-            <div class="filters animate-up delay-4">
-                <button class="filter-btn active" data-level="ALL">All Mentors</button>
-                <button class="filter-btn" data-level="HIGH_RATED">Top Rated</button>
-                <button class="filter-btn" data-level="VERIFIED">Verified Only</button>
-            </div>
-        </div>
-    </header>
-
-    <main class="container">
-        <div class="section-header">
-            <h3>Recommended Matches</h3>
-            <span class="badge" id="mentorCount">Searching...</span>
-        </div>
-        
-        <div class="mentors-grid" id="mentorsGrid">
-            <!-- Mentor cards will be injected here via JS -->
-            <div class="loader">Calibrating match scores...</div>
-        </div>
-    </main>
-
-    <!-- Booking Modal -->
-    <div class="modal-overlay" id="bookingModal">
-        <div class="modal glass animate-pop">
-            <div class="modal-header">
-                <h3>Book a Session</h3>
-                <button class="close-btn" id="closeModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="mentor-summary" id="modalMentorSummary">
-                    <!-- Populated by JS -->
-                </div>
-                
-                <form id="bookingForm" class="booking-form">
-                    <div class="form-group">
-                        <label for="topic">What do you want to focus on?</label>
-                        <input type="text" id="topic" required placeholder="e.g. Next.js architecture review">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="sessionDate">Select Time Slot</label>
-                        <input type="datetime-local" id="sessionDate" required>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary w-100 mt-3">Confirm Session</button>
-                </form>
-            </div>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="MentorMatch – Connect with industry experts through intelligent skill-based matching." />
+    <meta name="theme-color" content="#6366f1" />
+    <title>MentorMatch – Premium Mentorship Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { background: #0f172a; font-family: 'Inter', system-ui, sans-serif; }
+      #root { min-height: 100vh; }
+      #loading-screen {
+        position: fixed; inset: 0;
+        background: #0f172a;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 1rem; z-index: 9999;
+        transition: opacity 0.4s ease;
+      }
+      .loader-ring {
+        width: 48px; height: 48px;
+        border: 3px solid rgba(99,102,241,0.2);
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      .loader-text { color: #94a3b8; font-size: 0.9rem; letter-spacing: 0.05em; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div id="loading-screen">
+      <div class="loader-ring"></div>
+      <span class="loader-text">Loading MentorMatch…</span>
     </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="toast glass"></div>
-
-    <script type="module" src="assets/app.js"></script>
-</body>
+    <div id="root"></div>
+    <script>
+      // Hide loading screen once React mounts
+      document.addEventListener('DOMContentLoaded', () => {
+        const screen = document.getElementById('loading-screen');
+        if (screen) {
+          setTimeout(() => { screen.style.opacity = '0'; setTimeout(() => screen.remove(), 400); }, 600);
+        }
+      });
+    </script>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
 </html>
