@@ -331,7 +331,7 @@ const styles = `
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 24px;
-    background: linear-gradient(to bottom right, #fff 30%, #94a3b8);
+    background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -712,12 +712,13 @@ const LandingPage: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =
             </div>
           </div>
           <div style={{ flex: '1 1 400px', position: 'relative' }}>
-            <img 
-              src="/Users/shikharsingh/.gemini/antigravity/brain/dc4e7a88-552b-4093-b5c0-0e85cd38ec0f/mentormatch_hero_light_1776538730538.png" 
-              alt="Mentorship Visualization" 
-              className="glass"
-              style={{ width: '100%', borderRadius: '24px', transform: 'perspective(1000px) rotateY(-5deg)', boxShadow: '20px 20px 60px rgba(0,0,0,0.1)' }}
-            />
+            <div className="glass" style={{ padding: '8px', borderRadius: '28px', background: 'rgba(255,255,255,0.4)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)' }}>
+              <img 
+                src="/assets/hero.png" 
+                alt="Mentorship Visualization" 
+                style={{ width: '100%', borderRadius: '20px', display: 'block' }}
+              />
+            </div>
           </div>
         </div>
       </section>
