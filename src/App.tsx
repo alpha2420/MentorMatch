@@ -1101,7 +1101,7 @@ const MentorMatch: React.FC = () => {
     });
 
     // Listen to changes (login/logout/refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         const profile = await repository.getUserById(session.user.id);
         if (profile && mounted) {
@@ -1143,7 +1143,7 @@ const MentorMatch: React.FC = () => {
     try {
       const booking: Booking = {
         id: '',
-        studentId: student.id,
+        studentId: user.id,
         mentorId: bookingModal.data.id,
         date: formData.date,
         topic: formData.topic,
@@ -1157,7 +1157,7 @@ const MentorMatch: React.FC = () => {
       // Emit notification event
       notificationService.emit({
         type: 'session.requested',
-        studentId: student.id,
+        studentId: user.id,
         mentorId: bookingModal.data.id,
         bookingId: savedBooking.id,
         timestamp: new Date(),
