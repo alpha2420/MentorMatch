@@ -71,7 +71,7 @@ export interface MatchResult {
   matchReasons: string[];      // Human-readable explanations
   skillAlignment: number;      // 0–100
   experienceAlignment: number; // 0–100
-  ratingWeight: number;        // 0–100
+  availabilityAlignment: number; // 0–100
 }
 
 export interface SearchQuery {
