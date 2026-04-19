@@ -422,6 +422,16 @@ const styles = `
     border: 1px solid rgba(93, 64, 55, 0.15);
     margin-top: 80px;
   }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
 `;
  
 /**
@@ -854,33 +864,94 @@ const LandingPage: React.FC<{
         </div>
       </nav>
 
-      <section className="hero-section" style={{ padding: '40px 0 100px' }}>
-        <div className="container" style={{ display: 'flex', alignItems: 'center', gap: '60px', flexWrap: 'wrap-reverse' }}>
-          <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <h1 className="hero-title">
-              Master Engineering <br /> With 1-on-1 Mentoring
-            </h1>
-            <p className="hero-subtitle">
-              Connect with top engineers from Google, Meta, and Netflix. 
-              Get personalized guidance to accelerate your career and master modern tech stacks.
-            </p>
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-              <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '16px 40px', fontSize: '18px' }}>
-                Find Your Match Now
-              </button>
-              <button className="btn btn-secondary" style={{ padding: '16px 30px' }}>
-                Become a Mentor
-              </button>
+      <section className="hero-section" style={{ padding: '60px 0 80px' }}>
+        <div className="container" style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}>
+          {/* Badge pill */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(93,64,55,0.08)', border: '1px solid rgba(93,64,55,0.18)', borderRadius: '999px', padding: '6px 16px', marginBottom: '28px', fontSize: '13px', fontWeight: '700', color: 'var(--primary)' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', display: 'inline-block', animation: 'pulse 2s infinite' }}></span>
+            Welcome to MentorMatch
+          </div>
+          <h1 className="hero-title" style={{ fontSize: 'clamp(36px, 6vw, 68px)', lineHeight: '1.1', marginBottom: '24px' }}>
+            Master Engineering<br/>
+            <span style={{ background: 'linear-gradient(135deg, #5d4037, #8d6e63)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>With 1-on-1 Mentoring</span>
+          </h1>
+          <p className="hero-subtitle" style={{ fontSize: '18px', maxWidth: '540px', margin: '0 auto 40px' }}>
+            Connect with top engineers from Google, Meta, and Netflix. Get personalized guidance to accelerate your career.
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '64px' }}>
+            <button className="btn btn-primary" onClick={onGetStarted} style={{ padding: '16px 40px', fontSize: '17px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Start Free Trial <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: '8px', padding: '2px 8px' }}>→</span>
+            </button>
+            <button className="btn btn-secondary" onClick={onLogin} style={{ padding: '16px 32px', fontSize: '17px' }}>
+              Sign In
+            </button>
+          </div>
+        </div>
+
+        {/* Hero Image with Floating Cards */}
+        <div className="container" style={{ position: 'relative', maxWidth: '900px', margin: '0 auto' }}>
+          {/* Floating Card: Insights Overview (top-left) */}
+          <div className="glass" style={{ position: 'absolute', top: '-24px', left: '-20px', zIndex: 10, padding: '16px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.92)', boxShadow: '0 8px 32px rgba(93,64,55,0.15)', minWidth: '190px', animation: 'float 4s ease-in-out infinite' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '12px', fontWeight: '700' }}>Mentor Overview</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px', fontWeight: '800' }}>SC</div>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '700' }}>Sarah Chen</div>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>@sarahc</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '11px' }}>
+              <div><div style={{ fontWeight: '800', fontSize: '14px' }}>230</div><div style={{ color: 'var(--text-secondary)' }}>Sessions</div></div>
+              <div><div style={{ fontWeight: '800', fontSize: '14px' }}>2,648</div><div style={{ color: 'var(--text-secondary)' }}>Students</div></div>
+            </div>
+            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Best performance</span>
+              <span style={{ color: '#4caf50', fontSize: '12px', fontWeight: '700' }}>+83.7%</span>
             </div>
           </div>
-          <div style={{ flex: '1 1 400px', position: 'relative' }}>
-            <div className="glass" style={{ padding: '8px', borderRadius: '28px', background: 'rgba(255,255,255,0.4)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.15)' }}>
-              <img 
-                src="/assets/hero.png" 
-                alt="Mentorship Visualization" 
-                style={{ width: '100%', borderRadius: '20px', display: 'block' }}
-              />
+
+          {/* Floating Card: Post Insight / Match Score (top-right) */}
+          <div className="glass" style={{ position: 'absolute', top: '-20px', right: '-20px', zIndex: 10, padding: '16px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.92)', boxShadow: '0 8px 32px rgba(93,64,55,0.15)', minWidth: '200px', animation: 'float 4s ease-in-out infinite 1s' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)' }}>Match Insight</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Week 1</span>
             </div>
+            {/* Mini bar chart */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '40px', marginBottom: '10px' }}>
+              {[60, 80, 55, 95, 70, 88, 75].map((h, i) => (
+                <div key={i} style={{ flex: 1, background: i === 3 ? 'var(--primary)' : 'rgba(93,64,55,0.2)', borderRadius: '3px 3px 0 0', height: `${h}%`, transition: 'height 0.3s' }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Best match day</span>
+              <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--primary)' }}>7.9k</span>
+            </div>
+          </div>
+
+          {/* Floating Card: Followers / Sessions Booked (bottom-left) */}
+          <div className="glass" style={{ position: 'absolute', bottom: '40px', left: '-20px', zIndex: 10, padding: '14px 20px', borderRadius: '16px', background: 'rgba(255,255,255,0.92)', boxShadow: '0 8px 32px rgba(93,64,55,0.15)', display: 'flex', alignItems: 'center', gap: '12px', animation: 'float 4s ease-in-out infinite 2s' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(93,64,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🎯</div>
+            <div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Sessions Booked</div>
+              <div style={{ fontSize: '22px', fontWeight: '900', color: 'var(--primary)', lineHeight: '1.1' }}>2,648</div>
+              <div style={{ fontSize: '11px', color: '#4caf50', fontWeight: '700' }}>+6.2%</div>
+            </div>
+          </div>
+
+          {/* Main hero image */}
+          <img 
+            src="/assets/hero_saas.png" 
+            alt="MentorMatch Platform Preview" 
+            style={{ width: '100%', borderRadius: '28px', display: 'block', boxShadow: '0 30px 60px -20px rgba(93,64,55,0.25)' }}
+          />
+
+          {/* Social trust icons row */}
+          <div style={{ position: 'absolute', bottom: '-20px', right: '24px', display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.92)', borderRadius: '999px', padding: '10px 18px', boxShadow: '0 4px 20px rgba(93,64,55,0.15)' }}>
+            {['G', 'M', 'N', 'A', 'Be'].map((label, i) => (
+              <div key={i} style={{ width: '28px', height: '28px', borderRadius: '50%', background: i % 2 === 0 ? 'var(--primary)' : 'rgba(93,64,55,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800', color: i % 2 === 0 ? 'white' : 'var(--primary)' }}>
+                {label}
+              </div>
+            ))}
           </div>
         </div>
       </section>
